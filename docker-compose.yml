@@ -1,0 +1,179 @@
+networks:
+  tsbridge-network:
+    driver: bridge
+
+volumes:
+  tsbridge-state:
+  jellyfin-cache:
+
+services:
+
+  tsbridge:
+    image: ghcr.io/jtdowney/tsbridge:latest
+    command: "--provider docker --verbose"
+    container_name: tsbridge
+    restart: unless-stopped
+    environment:
+      - TS_OAUTH_CLIENT_ID=${TS_OAUTH_CLIENT_ID}
+      - TS_OAUTH_CLIENT_SECRET=${TS_OAUTH_CLIENT_SECRET}
+    networks:
+      - tsbridge-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Required for label discovery
+      - tsbridge-state:/var/lib/tsbridge
+    labels:
+      - "tsbridge.tailscale.oauth_client_id_env=TS_OAUTH_CLIENT_ID"
+      - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
+      - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
+      - "tsbridge.tailscale.default_tags=tag:homelab"
+      - "tsbridge.global.metrics_addr=:9090"
+      - "tsbridge.global.read_header_timeout=30s"
+      - "tsbridge.global.write_timeout=30s"
+      - "tsbridge.global.idle_timeout=120s"
+    ports:
+      - "9090:9090" # Metrics port
+  
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/jellyfin/config:/config
+      - jellyfin-cache:/cache
+      - ${MEDIA_DIR}:/data/media
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=8096"
+      - "tsbridge.service.whois_enabled=true"
+      - "tsbridge.service.write_timeout=0s"
+      - "tsbridge.service.response_header_timeout=0s"
+      - "tsbridge.service.idle_conn_timeout=300s"
+      - "tsbridge.service.flush_interval=-1ms"
+      - "tsbridge.service.tags=tag:homelab,tag:public-access"
+    ports:
+      - "8096:8096"
+
+  
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - LOG_LEVEL=info
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/jellyseerr/config:/app/config
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=5055"
+      - "tsbridge.service.whois_enabled=true"
+      - "tsbridge.service.write_timeout=0s"
+      - "tsbridge.service.flush_interval=-1ms"
+      - "tsbridge.service.tags=tag:homelab,tag:public-access"
+    depends_on:
+      - jellyfin
+  
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/radarr/config:/config
+      - ${MEDIA_DIR}/movies:/data/movies
+      - ${TORRENTS_DIR}:/data/torrents
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=7878"
+      - "tsbridge.service.whois_enabled=true"
+    depends_on:
+      - qbittorrent
+
+  sonarr:
+    image: ghcr.io/hotio/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/sonarr/config:/config
+      - ${MEDIA_DIR}/series:/data/series
+      - ${TORRENTS_DIR}:/data/torrents
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=8989"
+      - "tsbridge.service.whois_enabled=true"
+    depends_on:
+      - qbittorrent
+      
+
+  prowlarr:
+    image: linuxserver/prowlarr
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/prowlarr/config:/config
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=9696"
+      - "tsbridge.service.whois_enabled=true"
+
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Etc/UTC
+      - WEBUI_PORT=8080
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/qbittorrent/config:/config
+      - ${TORRENTS_DIR}:/data/torrents
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=8080"
+      - "tsbridge.service.whois_enabled=true"
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/bazarr/config:/config
+      - ${MEDIA_DIR}:/media
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=6767"
+      - "tsbridge.service.whois_enabled=true"
