@@ -32,7 +32,8 @@ services:
       - "tsbridge.global.idle_timeout=120s"
     ports:
       - "9090:9090" # Metrics port
-  
+
+
   jellyfin:
     image: jellyfin/jellyfin
     container_name: jellyfin
@@ -59,7 +60,7 @@ services:
     ports:
       - "8096:8096"
 
-  
+
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
@@ -80,7 +81,27 @@ services:
       - "tsbridge.service.tags=tag:homelab,tag:public-access"
     depends_on:
       - jellyfin
-  
+
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    networks:
+      - tsbridge-network
+    volumes:
+      - ${CONFIG_DIR}/bazarr/config:/config
+      - ${MEDIA_DIR}:/media
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=6767"
+      - "tsbridge.service.whois_enabled=true"
+
+
   radarr:
     image: linuxserver/radarr
     container_name: radarr
@@ -102,6 +123,7 @@ services:
     depends_on:
       - qbittorrent
 
+
   sonarr:
     image: ghcr.io/hotio/sonarr:latest
     container_name: sonarr
@@ -122,7 +144,7 @@ services:
       - "tsbridge.service.whois_enabled=true"
     depends_on:
       - qbittorrent
-      
+
 
   prowlarr:
     image: linuxserver/prowlarr
@@ -141,6 +163,7 @@ services:
       - "tsbridge.service.port=9696"
       - "tsbridge.service.whois_enabled=true"
 
+
   qbittorrent:
     image: linuxserver/qbittorrent
     container_name: qbittorrent
@@ -158,22 +181,4 @@ services:
     labels:
       - "tsbridge.enabled=true"
       - "tsbridge.service.port=8080"
-      - "tsbridge.service.whois_enabled=true"
-
-  bazarr:
-    image: lscr.io/linuxserver/bazarr:latest
-    container_name: bazarr
-    restart: unless-stopped
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-    networks:
-      - tsbridge-network
-    volumes:
-      - ${CONFIG_DIR}/bazarr/config:/config
-      - ${MEDIA_DIR}:/media
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=6767"
       - "tsbridge.service.whois_enabled=true"
