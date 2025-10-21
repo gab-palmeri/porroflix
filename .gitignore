@@ -1,4 +1,5 @@
 docker_data/
+venv/
 .env
 
 
