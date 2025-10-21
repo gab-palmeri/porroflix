@@ -1,15 +1,21 @@
 # Media Server with Jellyfin, *Arr Stack, and Tailscale
 
-This repository provides a **Docker configuration** for a complete home media server, including:
-
-- **Jellyfin** for media streaming
-- **Jellyseerr** for content request management
-- **Bazarr** for subtitles
-- ***Arr Stack** (Radarr, Sonarr, Prowlarr) for automated movie and TV series management
-- **qBittorrent** as a torrent client
-- **Tailscale + tsbridge** for securely exposing services via Funnel or private network
+This repository provides a **Docker configuration** for my home media server.
 
 All services are orchestrated via `docker-compose` and connected to Tailscale through `tsbridge`.
+
+## Services Overview
+
+| Service     | URL                                      | Description                     |
+| ----------- | ---------------------------------------- | ------------------------------- |
+| Jellyfin    | `jellyfin.<your-ts-name>.ts.net`        | Media streaming server          |
+| Jellyseerr  | `jellyseerr.<your-ts-name>.ts.net`      | Request interface for movies/TV |
+| Bazarr      | `bazarr.<your-ts-name>.ts.net`          | Subtitle management             |
+| Radarr      | `radarr.<your-ts-name>.ts.net`          | Movie management                |
+| Sonarr      | `sonarr.<your-ts-name>.ts.net`          | TV series management            |
+| Prowlarr    | `prowlarr.<your-ts-name>.ts.net`        | Indexer manager for *Arr stack  |
+| qBittorrent | `qbittorrent.<your-ts-name>.ts.net`     | Torrent client                  |
+
 
 ## Configuration
 
@@ -28,19 +34,6 @@ All services are orchestrated via `docker-compose` and connected to Tailscale th
 * `MEDIA_DIR`: path to your media library
 * `TORRENTS_DIR`: path for torrent downloads
 
----
-
-## Services Overview
-
-| Service     | URL                                      | Description                     |
-| ----------- | ---------------------------------------- | ------------------------------- |
-| Jellyfin    | `jellyfin.<your-ts-name>.ts.net`        | Media streaming server          |
-| Jellyseerr  | `jellyseerr.<your-ts-name>.ts.net`      | Request interface for movies/TV |
-| Bazarr      | `bazarr.<your-ts-name>.ts.net`          | Subtitle management             |
-| Radarr      | `radarr.<your-ts-name>.ts.net`          | Movie management                |
-| Sonarr      | `sonarr.<your-ts-name>.ts.net`          | TV series management            |
-| Prowlarr    | `prowlarr.<your-ts-name>.ts.net`        | Indexer manager for *Arr stack  |
-| qBittorrent | `qbittorrent.<your-ts-name>.ts.net`     | Torrent client                  |
 
 ## Running the Stack
 
@@ -66,7 +59,35 @@ docker compose logs -f <service_name>
 
 ## Tailscale Funnel
 
-* You can enable or disable Funnel access for each service by adjusting the `tsbridge.service.funnel_enabled` label in `docker-compose.yml`.
+`funnel.py` allows you to enable or disable the Tailscale Funnel for Jellyfin and Jellyseerr without manually editing `docker-compose.yml`.
+
+#### 1. Make the script executable
+
+```bash
+chmod +x funnel.py
+```
+
+#### 2. Create a Python virtual environment (optional but recommended)
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### 3. Install dependencies
+
+```bash
+pip install ruamel.yaml
+```
+
+#### 4. Usage
+
+```bash
+./funnel.py on|off
+```
+
+The script will update the `docker-compose.yml` labels and restart the **Jellyfin** and **Jellyseerr** containers.
+
 
 ## License
 
