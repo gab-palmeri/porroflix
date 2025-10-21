@@ -1,4 +1,4 @@
-# Media Server with Jellyfin, *Arr Stack, and Tailscale
+# Porroflix -  Media Server
 
 This repository provides a **Docker configuration** for my home media server.
 
