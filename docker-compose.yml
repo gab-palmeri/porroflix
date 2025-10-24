@@ -10,7 +10,7 @@ services:
 
   tsbridge:
     image: ghcr.io/jtdowney/tsbridge:latest
-    command: "--provider docker --verbose"
+    command: "--provider docker"
     container_name: tsbridge
     restart: unless-stopped
     environment:
@@ -90,7 +90,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ=${TZ}
     networks:
       - tsbridge-network
     volumes:
@@ -171,7 +171,7 @@ services:
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
-      - TZ=Etc/UTC
+      - TZ=${TZ}
       - WEBUI_PORT=8080
     networks:
       - tsbridge-network
