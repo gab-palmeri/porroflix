@@ -121,7 +121,7 @@ services:
       - "tsbridge.service.port=7878"
       - "tsbridge.service.whois_enabled=true"
     depends_on:
-      - qbittorrent
+      - vpn-qbittorrent
 
 
   sonarr:
@@ -143,7 +143,7 @@ services:
       - "tsbridge.service.port=8989"
       - "tsbridge.service.whois_enabled=true"
     depends_on:
-      - qbittorrent
+      - vpn-qbittorrent
 
 
   prowlarr:
@@ -173,12 +173,32 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - WEBUI_PORT=8080
-    networks:
-      - tsbridge-network
+    network_mode: "service:vpn-qbittorrent"
     volumes:
       - ${CONFIG_DIR}/qbittorrent/config:/config
       - ${TORRENTS_DIR}:/data/torrents
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=8080"
-      - "tsbridge.service.whois_enabled=true"
+    depends_on:
+      - vpn-qbittorrent
+
+  vpn-qbittorrent:
+      image: qmcgaw/gluetun:latest
+      container_name: vpn-qbittorrent
+      cap_add:
+        - NET_ADMIN
+      restart: unless-stopped
+      networks:
+        - tsbridge-network
+      environment:
+        - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+        - VPN_TYPE=${VPN_TYPE}
+        - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+        - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+        - VPN_USERNAME=${VPN_USERNAME}
+        - VPN_PASSWORD=${VPN_PASSWORD}
+        - SERVER_COUNTRIES=${SERVER_COUNTRIES}
+      volumes:
+        - ${CONFIG_DIR}/gluetun:/gluetun
+      labels:
+        - "tsbridge.enabled=true"
+        - "tsbridge.service.port=8080"
+        - "tsbridge.service.whois_enabled=true"
