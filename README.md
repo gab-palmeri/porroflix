@@ -27,12 +27,19 @@ All services are orchestrated via `docker-compose` and connected to Tailscale th
 
 2. **Update the following variables:**
 
-* `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_CLIENT_SECRET`: your Tailscale OAuth credentials
-* `PUID` / `PGID`: user and group ID for Docker file permissions
-* `TZ`: your timezone
-* `CONFIG_DIR`: path to store containers' configuration folders
-* `MEDIA_DIR`: path to your media library
-* `TORRENTS_DIR`: path for torrent downloads
+* `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_CLIENT_SECRET`: your Tailscale OAuth credentials  
+* `PUID` / `PGID`: user and group ID for Docker file permissions  
+* `TZ`: your timezone  
+* `CONFIG_DIR`: path to store containers' configuration folders  
+* `DATA_DIR`: base directory for all media and torrent data  
+* `MEDIA_FOLDER`: folder name inside `DATA_DIR` for your media library  
+* `TORRENTS_FOLDER`: folder name inside `DATA_DIR` for torrent downloads  
+* `VPN_SERVICE_PROVIDER`: your VPN provider  
+* `VPN_TYPE`: VPN protocol (`openvpn` or `wireguard`)  
+* `VPN_USERNAME` / `VPN_PASSWORD`: VPN account credentials (if required by provider)  
+* `WIREGUARD_PRIVATE_KEY`: your WireGuard private key (if using WireGuard)  
+* `WIREGUARD_ADDRESSES`: WireGuard assigned IP address range  
+* `SERVER_COUNTRIES`: preferred VPN server locations  
 
 
 ## Running the Stack
