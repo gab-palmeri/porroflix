@@ -47,7 +47,7 @@ services:
     volumes:
       - ${CONFIG_DIR}/jellyfin/config:/config
       - jellyfin-cache:/cache
-      - ${MEDIA_DIR}:/data/media
+      - ${DATA_DIR}/${MEDIA_FOLDER}:/data/media
     labels:
       - "tsbridge.enabled=true"
       - "tsbridge.service.port=8096"
@@ -95,7 +95,7 @@ services:
       - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/bazarr/config:/config
-      - ${MEDIA_DIR}:/media
+      - ${DATA_DIR}/${MEDIA_FOLDER}:/media
     labels:
       - "tsbridge.enabled=true"
       - "tsbridge.service.port=6767"
@@ -114,8 +114,7 @@ services:
       - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/radarr/config:/config
-      - ${MEDIA_DIR}/movies:/data/movies
-      - ${TORRENTS_DIR}:/data/torrents
+      - ${DATA_DIR}:/data
     labels:
       - "tsbridge.enabled=true"
       - "tsbridge.service.port=7878"
@@ -136,8 +135,7 @@ services:
       - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/sonarr/config:/config
-      - ${MEDIA_DIR}/series:/data/series
-      - ${TORRENTS_DIR}:/data/torrents
+      - ${DATA_DIR}:/data
     labels:
       - "tsbridge.enabled=true"
       - "tsbridge.service.port=8989"
@@ -176,29 +174,29 @@ services:
     network_mode: "service:vpn-qbittorrent"
     volumes:
       - ${CONFIG_DIR}/qbittorrent/config:/config
-      - ${TORRENTS_DIR}:/data/torrents
+      - ${DATA_DIR}/${TORRENTS_FOLDER}:/data/torrents
     depends_on:
       - vpn-qbittorrent
 
   vpn-qbittorrent:
-      image: qmcgaw/gluetun:latest
-      container_name: vpn-qbittorrent
-      cap_add:
-        - NET_ADMIN
-      restart: unless-stopped
-      networks:
-        - tsbridge-network
-      environment:
-        - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-        - VPN_TYPE=${VPN_TYPE}
-        - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-        - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-        - VPN_USERNAME=${VPN_USERNAME}
-        - VPN_PASSWORD=${VPN_PASSWORD}
-        - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      volumes:
-        - ${CONFIG_DIR}/gluetun:/gluetun
-      labels:
-        - "tsbridge.enabled=true"
-        - "tsbridge.service.port=8080"
-        - "tsbridge.service.whois_enabled=true"
+    image: qmcgaw/gluetun:latest
+    container_name: vpn-qbittorrent
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    networks:
+      - tsbridge-network
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - VPN_TYPE=${VPN_TYPE}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - VPN_USERNAME=${VPN_USERNAME}
+      - VPN_PASSWORD=${VPN_PASSWORD}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
+    volumes:
+      - ${CONFIG_DIR}/gluetun:/gluetun
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=8080"
+      - "tsbridge.service.whois_enabled=true"
