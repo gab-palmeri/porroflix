@@ -2,20 +2,20 @@
 
 This repository provides a **Docker configuration** for my home media server.
 
-All services are orchestrated via `docker-compose` and connected to Tailscale through `tsbridge`.
+All services are orchestrated via `docker-compose`.
 
 ## Containers Overview
 
-| Container       | URL                                     | Description                                                                                            |
-| --------------- | ----------------------------------------| -------------------------------------------------------------------------------------------------------|
-| Jellyfin        | `jellyfin.<your-ts-name>.ts.net`        | Media streaming server                                                                                 |
-| Jellyseerr      | `jellyseerr.<your-ts-name>.ts.net`      | Request interface for movies/TV                                                                        |
-| Bazarr          | `bazarr.<your-ts-name>.ts.net`          | Subtitle management                                                                                    |
-| Radarr          | `radarr.<your-ts-name>.ts.net`          | Movie management                                                                                       |
-| Sonarr          | `sonarr.<your-ts-name>.ts.net`          | TV series management                                                                                   |
-| Prowlarr        | `prowlarr.<your-ts-name>.ts.net`        | Indexer manager for *Arr stack                                                                         |
-| qBittorrent     | `See vpn-qBittorrent`                   | Internal Torrent client, not seen by the Tailnet                                                       |
-| vpn-qBittorrent | `vpn-qbittorrent.<your-ts-name>.ts.net` | VPN gateway used by qBittorrent. All qbittorrent's traffic goes through here (WebUI, Radarr, Sonarr..) |
+| Container       | Default Access              | Description                                                             |
+|-----------------|-----------------------------|-------------------------------------------------------------------------|
+| Jellyfin        | http://host_ip:8096          | Media streaming server                                                  |
+| Jellyseerr      | http://host_ip:5055          | Request interface for movies and TV shows                               |
+| Bazarr          | http://host_ip:6767          | Subtitle management                                                     |
+| Radarr          | http://host_ip:7878          | Movie management                                                        |
+| Sonarr          | http://host_ip:8989          | TV series management                                                    |
+| Prowlarr        | http://host_ip:9696          | Indexer manager for the *Arr stack                                      |
+| qBittorrent     | Internal (via VPN)          | Torrent client (traffic routed through VPN if enabled)                 |
+| vpn-qBittorrent | http://host_ip:8080          | VPN gateway container used by qBittorrent                               |
 
 
 ## Configuration
@@ -27,9 +27,6 @@ All services are orchestrated via `docker-compose` and connected to Tailscale th
     ````
 
 2. **Update the following variables:**
-
-    _Tailscale Config_
-    * `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_CLIENT_SECRET`: your Tailscale OAuth credentials
   
    _Misc_
     * `PUID` / `PGID`: user and group ID for Docker file permissions  
@@ -71,37 +68,6 @@ docker compose logs -f <service_name>
 ```
 
 ---
-
-## Tailscale Funnel
-
-`funnel.py` allows you to enable or disable the Tailscale Funnel for Jellyfin and Jellyseerr without manually editing `docker-compose.yml`.
-
-#### 1. Make the script executable
-
-```bash
-chmod +x funnel.py
-```
-
-#### 2. Create a Python virtual environment (optional but recommended)
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-#### 3. Install dependencies
-
-```bash
-pip install ruamel.yaml
-```
-
-#### 4. Usage
-
-```bash
-./funnel.py on|off
-```
-
-The script will update the `docker-compose.yml` labels and restart the **Jellyfin** and **Jellyseerr** containers.
 
 ## Removing the VPN
 

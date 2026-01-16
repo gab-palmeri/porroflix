@@ -1,38 +1,7 @@
-networks:
-  tsbridge-network:
-    driver: bridge
-
 volumes:
-  tsbridge-state:
   jellyfin-cache:
 
 services:
-
-  tsbridge:
-    image: ghcr.io/jtdowney/tsbridge:latest
-    command: "--provider docker"
-    container_name: tsbridge
-    restart: unless-stopped
-    environment:
-      - TS_OAUTH_CLIENT_ID=${TS_OAUTH_CLIENT_ID}
-      - TS_OAUTH_CLIENT_SECRET=${TS_OAUTH_CLIENT_SECRET}
-    networks:
-      - tsbridge-network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # Required for label discovery
-      - tsbridge-state:/var/lib/tsbridge
-    labels:
-      - "tsbridge.tailscale.oauth_client_id_env=TS_OAUTH_CLIENT_ID"
-      - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
-      - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
-      - "tsbridge.tailscale.default_tags=tag:homelab"
-      - "tsbridge.global.metrics_addr=:9090"
-      - "tsbridge.global.read_header_timeout=30s"
-      - "tsbridge.global.write_timeout=30s"
-      - "tsbridge.global.idle_timeout=120s"
-    ports:
-      - "9090:9090" # Metrics port
-
 
   jellyfin:
     image: jellyfin/jellyfin
@@ -42,21 +11,10 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-    networks:
-      - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/jellyfin/config:/config
       - jellyfin-cache:/cache
       - ${DATA_DIR}/${MEDIA_FOLDER}:/data/media
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=8096"
-      - "tsbridge.service.whois_enabled=true"
-      - "tsbridge.service.write_timeout=0s"
-      - "tsbridge.service.response_header_timeout=0s"
-      - "tsbridge.service.idle_conn_timeout=300s"
-      - "tsbridge.service.flush_interval=-1ms"
-      - "tsbridge.service.tags=tag:homelab,tag:public-access"
     ports:
       - "8096:8096"
 
@@ -68,17 +26,10 @@ services:
     environment:
       - TZ=${TZ}
       - LOG_LEVEL=info
-    networks:
-      - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/jellyseerr/config:/app/config
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=5055"
-      - "tsbridge.service.whois_enabled=true"
-      - "tsbridge.service.write_timeout=0s"
-      - "tsbridge.service.flush_interval=-1ms"
-      - "tsbridge.service.tags=tag:homelab,tag:public-access"
+    ports:
+      - "5055:5055"
     depends_on:
       - jellyfin
 
@@ -91,15 +42,11 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
-    networks:
-      - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/bazarr/config:/config
       - ${DATA_DIR}/${MEDIA_FOLDER}:/media
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=6767"
-      - "tsbridge.service.whois_enabled=true"
+    ports:
+      - "6767:6767"
 
 
   radarr:
@@ -110,15 +57,11 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-    networks:
-      - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/radarr/config:/config
       - ${DATA_DIR}:/data
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=7878"
-      - "tsbridge.service.whois_enabled=true"
+    ports:
+      - "7878:7878"
     depends_on:
       - vpn-qbittorrent
 
@@ -131,15 +74,11 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-    networks:
-      - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/sonarr/config:/config
       - ${DATA_DIR}:/data
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=8989"
-      - "tsbridge.service.whois_enabled=true"
+    ports:
+      - "8989:8989"
     depends_on:
       - vpn-qbittorrent
 
@@ -152,14 +91,10 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-    networks:
-      - tsbridge-network
     volumes:
       - ${CONFIG_DIR}/prowlarr/config:/config
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=9696"
-      - "tsbridge.service.whois_enabled=true"
+    ports:
+      - "9696:9696"
 
 
   qbittorrent:
@@ -184,8 +119,6 @@ services:
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
-    networks:
-      - tsbridge-network
     environment:
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
@@ -196,7 +129,5 @@ services:
       - SERVER_COUNTRIES=${SERVER_COUNTRIES}
     volumes:
       - ${CONFIG_DIR}/gluetun:/gluetun
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.port=8080"
-      - "tsbridge.service.whois_enabled=true"
+    ports:
+      - "8080:8080" # qBittorrent Web UI
