@@ -62,9 +62,6 @@ services:
       - ${DATA_DIR}:/data
     ports:
       - "7878:7878"
-    depends_on:
-      - vpn-qbittorrent
-
 
   sonarr:
     image: ghcr.io/hotio/sonarr:latest
@@ -79,9 +76,6 @@ services:
       - ${DATA_DIR}:/data
     ports:
       - "8989:8989"
-    depends_on:
-      - vpn-qbittorrent
-
 
   prowlarr:
     image: linuxserver/prowlarr
@@ -96,38 +90,17 @@ services:
     ports:
       - "9696:9696"
 
-
   qbittorrent:
     image: linuxserver/qbittorrent
-    container_name: qbittorrent
+    container_name: torrent-client
     restart: unless-stopped
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
       - WEBUI_PORT=8080
-    network_mode: "service:vpn-qbittorrent"
     volumes:
       - ${CONFIG_DIR}/qbittorrent/config:/config
       - ${DATA_DIR}/${TORRENTS_FOLDER}:/data/torrents
-    depends_on:
-      - vpn-qbittorrent
-
-  vpn-qbittorrent:
-    image: qmcgaw/gluetun:latest
-    container_name: vpn-qbittorrent
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-    environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${VPN_TYPE}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-      - VPN_USERNAME=${VPN_USERNAME}
-      - VPN_PASSWORD=${VPN_PASSWORD}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-    volumes:
-      - ${CONFIG_DIR}/gluetun:/gluetun
     ports:
-      - "8080:8080" # qBittorrent Web UI
+      - "8080:8080" 

@@ -69,15 +69,6 @@ docker compose logs -f <service_name>
 
 ---
 
-## Removing the VPN
-
-If you don't want to use a VPN follow these steps:
-
-1. Copy the **networks** and **labels** properties from **vpn-qbittorrent**
-2. Paste them in **qbittorrent**
-3. Remove the **network_mode** and **depends_on** properties from **qbittorrent**
-4. Change the **depends_on** property values in **radarr** and **sonarr** from **vpn-qbittorrent** to **qbittorrent**
-
 ## License
 
 This repository is provided as-is for personal/home use.
